@@ -193,12 +193,16 @@ const (
 )
 
 type OIDCProvider struct {
-	// name of the OIDC provider
+	// name provides a human-readable identifier for the OIDC provider.
+	// It may be used to distinguish between multiple OIDC providers,
+	// and does not impact token validation or authentication mechanics.
 	//
 	// +kubebuilder:validation:MinLength=1
 	// +required
 	Name string `json:"name"`
-	// issuer describes atributes of the OIDC token issuer
+
+	// issuer contains configuration details required to validate the
+	// identity of tokens issued by this provider.
 	//
 	// +required
 	Issuer TokenIssuer `json:"issuer"`
@@ -226,17 +230,19 @@ type OIDCProvider struct {
 type TokenAudience string
 
 type TokenIssuer struct {
-	// URL is the serving URL of the token issuer.
-	// Must use the https:// scheme.
+    // issuerURL is the uniquely identifying URL of the OIDC provider.
+    // It must use the HTTPS scheme and match the "iss" claim in the JWT exactly.
+    // Its format is usually a url pointing to the root of the identity provider,
+	// but is unique to each issuer's configuration and could contain a path component.
 	//
 	// +kubebuilder:validation:Pattern=`^https:\/\/[^\s]`
 	// +required
 	URL string `json:"issuerURL"`
 
-	// audiences is an array of audiences that the token was issued for.
-	// Valid tokens must include at least one of these values in their
-	// "aud" claim.
-	// Must be set to exactly one value.
+    // audiences specifies the intended recipients of the token.
+    // At least one audience configured here must match at least one audience 
+	// in the "aud" claim in the JWT during validation. A minimum of 1 audience is 
+	// required, and up to 10 audiences may be specified
 	//
 	// +listType=set
 	// +kubebuilder:validation:MinItems=1
@@ -244,23 +250,29 @@ type TokenIssuer struct {
 	// +required
 	Audiences []TokenAudience `json:"audiences"`
 
-	// CertificateAuthority is a reference to a config map in the
-	// configuration namespace. The .data of the configMap must contain
-	// the "ca-bundle.crt" key.
+	// issuerCertificateAuthority is a reference to a config map in the
+	// configuration namespace containing the public keys of the trusted 
+	// root or intermediate certificate authorities used to verify the 
+	// signature of JWTs issued by this issuer.
+	// The .data of the configMap must contain the "ca-bundle.crt" key.
 	// If unset, system trust is used instead.
+	//
+	// +optional
 	CertificateAuthority ConfigMapNameReference `json:"issuerCertificateAuthority"`
 }
 
 type TokenClaimMappings struct {
-	// username is a name of the claim that should be used to construct
+	// username is a name of the JWT claim that should be used to construct
 	// usernames for the cluster identity.
 	//
 	// Default value: "sub"
+	//
+	// +optional
 	Username UsernameClaimMapping `json:"username,omitempty"`
 
-	// groups is a name of the claim that should be used to construct
+	// groups is a name of the JWT claim that should be used to construct
 	// groups for the cluster identity.
-	// The referenced claim must use array of strings values.
+	// The referenced claim must be an array of string values.
 	Groups PrefixedClaimMapping `json:"groups,omitempty"`
 }
 
