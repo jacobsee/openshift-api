@@ -230,18 +230,18 @@ type OIDCProvider struct {
 type TokenAudience string
 
 type TokenIssuer struct {
-    // issuerURL is the uniquely identifying URL of the OIDC provider.
-    // It must use the HTTPS scheme and match the "iss" claim in the JWT exactly.
-    // Its format is usually a url pointing to the root of the identity provider,
+	// issuerURL is the uniquely identifying URL of the OIDC provider.
+	// It must use the HTTPS scheme and match the "iss" claim in the JWT exactly.
+	// Its format is usually a url pointing to the root of the identity provider,
 	// but is unique to each issuer's configuration and could contain a path component.
 	//
 	// +kubebuilder:validation:Pattern=`^https:\/\/[^\s]`
 	// +required
 	URL string `json:"issuerURL"`
 
-    // audiences specifies the intended recipients of the token.
-    // At least one audience configured here must match at least one audience 
-	// in the "aud" claim in the JWT during validation. A minimum of 1 audience is 
+	// audiences specifies the intended recipients of the token.
+	// At least one audience configured here must match at least one audience
+	// in the "aud" claim in the JWT during validation. A minimum of 1 audience is
 	// required, and up to 10 audiences may be specified
 	//
 	// +listType=set
@@ -251,8 +251,8 @@ type TokenIssuer struct {
 	Audiences []TokenAudience `json:"audiences"`
 
 	// issuerCertificateAuthority is a reference to a config map in the
-	// configuration namespace containing the public keys of the trusted 
-	// root or intermediate certificate authorities used to verify the 
+	// configuration namespace containing the public keys of the trusted
+	// root or intermediate certificate authorities used to verify the
 	// signature of JWTs issued by this issuer.
 	// The .data of the configMap must contain the "ca-bundle.crt" key.
 	// If unset, system trust is used instead.
